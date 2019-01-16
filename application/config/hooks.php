@@ -13,8 +13,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 
 $hook['display_override'] = [
-	'filepath' => 'hooks',
-	'filename' => 'ViewCompiler.php',
-	'class' => 'ViewCompiler',
-	'function' => 'render'
+    'filepath' => 'hooks',
+    'filename' => 'ViewCompiler.php',
+    'class' => 'ViewCompiler',
+    'function' => 'render'
 ];

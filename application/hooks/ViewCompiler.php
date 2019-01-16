@@ -1,37 +1,37 @@
-<?php 
+<?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
  * Author: Varun Pujari <varunpvp@gmail.com>
- * Date:   Wed Jan 16 10:44:53 2019 
+ * Date:   Wed Jan 16 10:44:53 2019
  */
 class ViewCompiler
 {
-	
-	private $CI;
 
-	public function __construct() {
-		$this->CI = & get_instance();
-	}
+    private $CI;
 
-	public function render() {
-		$view = $this->getView();
-		$layout = $this->loadLayoutView($view);
+    public function __construct() {
+        $this->CI = & get_instance();
+    }
 
-		if ($layout === false) {
-			echo $view;
-			return;
-		}
+    public function render() {
+        $view = $this->getView();
+        $layout = $this->loadLayoutView($view);
 
-		echo $this->compileView($view, $layout);
-	}
-    
-	public function compileView($view, $layout) {
-		$compiledView = $this->injectSections($view, $layout);
-		return $compiledView;
-	}
+        if ($layout === false) {
+        	echo $view;
+        	return;
+        }
 
-	private function injectSections($view, $layout) {
+        echo $this->compileView($view, $layout);
+    }
+
+    public function compileView($view, $layout) {
+        $compiledView = $this->injectSections($view, $layout);
+        return $compiledView;
+    }
+
+    private function injectSections($view, $layout) {
 
         $compiledView = $layout;
         $sections = $this->findSections($layout);
@@ -45,9 +45,9 @@ class ViewCompiler
             $compiledView = $this->injectSection($compiledView, $section['tag'], $sectionContent);
         }
         return $compiledView;
-	}
+    }
 
-	private function findSections($layout) {
+    private function findSections($layout) {
         $matches = [];
         $sections = [];
         if (preg_match_all("/@provide\(([a-z]+)\)/", $layout, $matches)) {
@@ -69,41 +69,46 @@ class ViewCompiler
         return str_replace($tag, $content, $layout);
     }
 
-	private function loadLayoutView($view) {
+    private function loadLayoutView($view) {
 
-		$extends = [];
-		$layoutView = NULL;
+        $layoutView = $this->getLayoutView($view);
 
-		if (preg_match("/@extends\(.*\)/", $view, $extends)) {
-			$layoutView = substr($extends[0], 9, -1);
-		} else if ($this->getControllerLayoutFile() !== false) {
-			$layoutView = $this->getControllerLayoutFile();
-		}
-		
-		if ($layoutView) {
-			$layoutContent = $this->loadView($layoutView);
-			if ($layoutContent !== false) {
-				return $layoutContent;
-			}
-		}
+        if ($layoutView) {
+            $layoutContent = $this->loadView($layoutView);
+            if ($layoutContent !== false) {
+        	   return $layoutContent;
+            }
+        }
 
-		return false;
+        return false;
 	}
 
-	private function getView() {
-		return $this->CI->output->get_output();
-	}
+    private function getLayoutView($view) {
+        $extends = [];
+        $layoutView = NULL;
 
-	private function loadView($view) {
-		$viewPath = $this->getViewPath($view);
-		return file_exists($viewPath) ? $this->CI->load->file($viewPath, true) : false;
-	}
+        if (preg_match("/@extends\(.*\)/", $view, $extends)) {
+            $layoutView = substr($extends[0], 9, -1);
+        } else if ($this->getControllerLayoutFile() !== false) {
+            $layoutView = $this->getControllerLayoutFile();
+        }
+        return $layoutView;
+    }
 
-	private function getViewPath($view) {
-		return BASEPATH . "../application/views/$view.php";
-	}
+    private function getView() {
+        return $this->CI->output->get_output();
+    }
 
-	private function getControllerLayoutFile() {
-		return (! empty($this->CI->layout)) ? $this->CI->layout : false;
-	}
+    private function loadView($view) {
+        $viewPath = $this->getViewPath($view);
+        return file_exists($viewPath) ? $this->CI->load->file($viewPath, true) : false;
+    }
+
+    private function getViewPath($view) {
+        return BASEPATH . "../application/views/$view.php";
+    }
+
+    private function getControllerLayoutFile() {
+        return (! empty($this->CI->layout)) ? $this->CI->layout : false;
+    }
 }
