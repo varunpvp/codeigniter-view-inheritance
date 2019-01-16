@@ -10,47 +10,52 @@ class ViewCompiler
 
     private $CI;
 
+    private $view;
+    private $layout;
+    private $compiledView;
+
     public function __construct() {
         $this->CI = & get_instance();
     }
 
-    public function render() {
-        $view = $this->getView();
-        $layout = $this->loadLayoutView($view);
+    public function compile() {
+        $this->view = $this->getView();
+        $this->loadLayoutView();
 
-        if ($layout === false) {
-        	echo $view;
-        	return;
+        if ($this->layout) {
+            $this->compileView();
         }
 
-        echo $this->compileView($view, $layout);
+        $this->renderView();
     }
 
-    public function compileView($view, $layout) {
-        $compiledView = $this->injectSections($view, $layout);
-        return $compiledView;
+    public function renderView() {
+        echo $this->compiledView ? $this->compiledView : $this->view;
     }
 
-    private function injectSections($view, $layout) {
+    public function compileView() {
+        $this->injectSections();
+    }
 
-        $compiledView = $layout;
-        $sections = $this->findSections($layout);
+    private function injectSections() {
+
+        $sections = $this->findSections();
 
         if (! count($sections)) {
-            return $view;
+            return;
         }
+
+        $this->compiledView = $this->layout;
 
         foreach ($sections as $section) {
-            $sectionContent = $this->extractSection($view, $section['name']);
-            $compiledView = $this->injectSection($compiledView, $section['tag'], $sectionContent);
+            $this->injectSection($section);
         }
-        return $compiledView;
     }
 
-    private function findSections($layout) {
+    private function findSections() {
         $matches = [];
         $sections = [];
-        if (preg_match_all("/@provide\(([a-z]+)\)/", $layout, $matches)) {
+        if (preg_match_all("/@provide\(([a-z]+)\)/", $this->layout, $matches)) {
             $tags = $matches[0];
             foreach ($tags as $index => $tag) {
                 $sections[] = ['tag' => $tag, 'name' => $matches[1][$index]];
@@ -59,35 +64,31 @@ class ViewCompiler
         return $sections;
     }
 
-    private function extractSection($view, $section) {
+    private function injectSection($section) {
+        $content = $this->extractSection($section['name']);
+        $this->compiledView = str_replace($section['tag'], $content, $this->compiledView);
+    }
+
+    private function extractSection($section) {
         $match = [];
-        $found = preg_match("/@section\($section\)(.*?)@endsection/s", $view, $match);
+        $found = preg_match("/@section\($section\)(.*?)@endsection/s", $this->view, $match);
         return $found ? $match[1] : "";
     }
 
-    private function injectSection($layout, $tag, $content) {
-        return str_replace($tag, $content, $layout);
-    }
+    private function loadLayoutView() {
 
-    private function loadLayoutView($view) {
-
-        $layoutView = $this->getLayoutView($view);
+        $layoutView = $this->getLayoutView();
 
         if ($layoutView) {
-            $layoutContent = $this->loadView($layoutView);
-            if ($layoutContent !== false) {
-        	   return $layoutContent;
-            }
+            $this->layout = $this->loadView($layoutView);
         }
-
-        return false;
 	}
 
-    private function getLayoutView($view) {
+    private function getLayoutView() {
         $extends = [];
         $layoutView = NULL;
 
-        if (preg_match("/@extends\(.*\)/", $view, $extends)) {
+        if (preg_match("/@extends\(.*\)/", $this->view, $extends)) {
             $layoutView = substr($extends[0], 9, -1);
         } else if ($this->getControllerLayoutFile() !== false) {
             $layoutView = $this->getControllerLayoutFile();

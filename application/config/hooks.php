@@ -16,5 +16,5 @@ $hook['display_override'] = [
     'filepath' => 'hooks',
     'filename' => 'ViewCompiler.php',
     'class' => 'ViewCompiler',
-    'function' => 'render'
+    'function' => 'compile'
 ];
