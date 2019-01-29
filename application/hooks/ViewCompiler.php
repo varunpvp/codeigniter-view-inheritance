@@ -99,9 +99,9 @@ class ViewCompiler
     private function getView() {
         return $this->CI->output->get_output();
     }
-    
+
     private function setView($view) {
-        return $this->CI->output->set_output($view);
+        echo $view;
     }
 
     private function loadView($view) {
