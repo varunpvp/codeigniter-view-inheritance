@@ -5,18 +5,50 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Author: Varun Pujari <varunpvp@gmail.com>
  * Date:   Wed Jan 16 10:44:53 2019
  */
-class ViewCompiler
+class ViewCompiler extends AbstractViewCompiler
 {
 
     private $CI;
+
+    public function __construct() {
+        $this->CI = & get_instance();
+    }
+
+    protected function getView() {
+        return $this->CI->output->get_output();
+    }
+
+    protected function setView($view) {
+        echo $view;
+    }
+
+    protected function loadView($view) {
+        $viewPath = $this->getViewPath($view);
+        return file_exists($viewPath) ? $this->CI->load->file($viewPath, true) : false;
+    }
+
+    protected function getControllerLayoutFile() {
+        return (! empty($this->CI->layout)) ? $this->CI->layout : false;
+    }
+
+    protected function getViewPath($view) {
+        return BASEPATH . "../application/views/$view.php";
+    }
+}
+
+abstract class AbstractViewCompiler {
 
     private $view;
     private $layout;
     private $compiledView;
 
-    public function __construct() {
-        $this->CI = & get_instance();
-    }
+    abstract protected function setView($view);
+
+    abstract protected function getView();
+
+    abstract protected function getControllerLayoutFile();
+
+    abstract protected function loadView($view);
 
     public function compile() {
         $this->view = $this->getView();
@@ -29,11 +61,11 @@ class ViewCompiler
         $this->renderView();
     }
 
-    public function renderView() {
+    private function renderView() {
         $this->setView($this->compiledView ? $this->compiledView : $this->view);
     }
 
-    public function compileView() {
+    private function compileView() {
         $this->injectSections();
     }
 
@@ -96,24 +128,4 @@ class ViewCompiler
         return $layoutView;
     }
 
-    private function getView() {
-        return $this->CI->output->get_output();
-    }
-
-    private function setView($view) {
-        echo $view;
-    }
-
-    private function loadView($view) {
-        $viewPath = $this->getViewPath($view);
-        return file_exists($viewPath) ? $this->CI->load->file($viewPath, true) : false;
-    }
-
-    private function getViewPath($view) {
-        return BASEPATH . "../application/views/$view.php";
-    }
-
-    private function getControllerLayoutFile() {
-        return (! empty($this->CI->layout)) ? $this->CI->layout : false;
-    }
 }
