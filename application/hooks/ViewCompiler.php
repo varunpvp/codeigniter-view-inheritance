@@ -30,7 +30,7 @@ class ViewCompiler
     }
 
     public function renderView() {
-        echo $this->compiledView ? $this->compiledView : $this->view;
+        $this->setView($this->compiledView ? $this->compiledView : $this->view);
     }
 
     public function compileView() {
@@ -98,6 +98,10 @@ class ViewCompiler
 
     private function getView() {
         return $this->CI->output->get_output();
+    }
+
+    private function setView($view) {
+        echo $view;
     }
 
     private function loadView($view) {
