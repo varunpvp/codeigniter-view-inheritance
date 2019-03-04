@@ -117,6 +117,8 @@ abstract class AbstractViewCompiler {
 
         if ($layoutView) {
             $this->layout = $this->loadView($layoutView);
+            // check if layout has extends tag, if so, compile the layout first
+            // else set the layout
         }
 	}
 
