@@ -38,6 +38,10 @@ class ViewCompiler extends AbstractViewCompiler
 
 abstract class AbstractViewCompiler {
 
+    private const REGEX_EXTENDS = "/@extends\(.*\)/";
+    private const REGEX_PROVIDE = "/@provide\(([a-z]+)\)/";
+    private const REGEX_SECTION = "/@section\(%s\)(.*?)@endsection/s";
+
     private $view;
     private $layout;
     private $compiledView;
@@ -87,7 +91,7 @@ abstract class AbstractViewCompiler {
     private function findSections() {
         $matches = [];
         $sections = [];
-        if (preg_match_all("/@provide\(([a-z]+)\)/", $this->layout, $matches)) {
+        if (preg_match_all(self::REGEX_PROVIDE, $this->layout, $matches)) {
             $tags = $matches[0];
             foreach ($tags as $index => $tag) {
                 $sections[] = ['tag' => $tag, 'name' => $matches[1][$index]];
@@ -103,7 +107,7 @@ abstract class AbstractViewCompiler {
 
     private function extractSection($section) {
         $match = [];
-        $found = preg_match("/@section\($section\)(.*?)@endsection/s", $this->view, $match);
+        $found = preg_match(sprintf(self::REGEX_SECTION, $section), $this->view, $match);
         return $found ? $match[1] : "";
     }
 
@@ -120,7 +124,7 @@ abstract class AbstractViewCompiler {
         $extends = [];
         $layoutView = NULL;
 
-        if (preg_match("/@extends\(.*\)/", $this->view, $extends)) {
+        if (preg_match(self::REGEX_EXTENDS, $this->view, $extends)) {
             $layoutView = substr($extends[0], 9, -1);
         } else if ($this->getControllerLayoutFile() !== false) {
             $layoutView = $this->getControllerLayoutFile();
